@@ -1,0 +1,11 @@
+.background-login{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(0deg, rgba(0, 5, 36, 0.85), rgba(0, 5, 36, 0.85)), url(./assets/background-login.jpg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    height: 100vh;
+}
+
