@@ -18,7 +18,7 @@ const Principal = () => {
     backgroundClass = 'background-login';
   } else if (location.pathname === '/home') {
     backgroundClass = 'background-home';
-  }
+  } 
 
   return (
     <div className={`${backgroundClass}`}>
