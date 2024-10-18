@@ -20,10 +20,10 @@ const SensorCard = ({ identificador, dataSensor, horaSensor , temperaturaSensor}
     }
     
 	const infoSensor = {
-		id: identificador || "EQ",
+		id: identificador,
 		data: dataSensor || getDate(),
         hora: horaSensor || getHour(),
-        temperatura: temperaturaSensor || "20°C"
+        temperatura: temperaturaSensor
 	};
 
 	return (
