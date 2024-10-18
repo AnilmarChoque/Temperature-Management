@@ -1,24 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import "../pages/home/Home.css";
 
-const SearchBar = ({ size, backgroundColor}) => {
-    const backgroundSearch = {
-        width: size,
-        backgroundColor: backgroundColor || "#101F78"
-    };
+const SearchBar = ({ size, backgroundColor, onSearch }) => {
+	const backgroundSearch = {
+		width: size,
+		backgroundColor: backgroundColor || "#101F78",
+	};
 
-    const backgroundInput = {
-        backgroundColor: backgroundColor || "#101F78"
-    }
-    
-    return (
-        <div className="search-bar" style={backgroundSearch}>
-		    <input type="text" placeholder="Pesquisar Equipamento" style={backgroundInput} />
-    	    <button>
+	const backgroundInput = {
+		backgroundColor: backgroundColor || "#101F78",
+	};
+
+	const [searchTerm, setSearchTerm] = useState("");
+
+	const handleInputChange = (event) => {
+		const value = event.target.value;
+		setSearchTerm(value);
+		onSearch(value);
+	};
+
+	return (
+		<div className="search-bar" style={backgroundSearch}>
+			<input
+				type="text"
+				placeholder="Pesquisar Equipamento"
+				style={backgroundInput}
+				onChange={handleInputChange}
+			/>
+			<button>
 				<img src="./src/assets/search.png" alt="lupa" />
 			</button>
 		</div>
-    )
-}
+	);
+};
 
-export default SearchBar
+export default SearchBar;
