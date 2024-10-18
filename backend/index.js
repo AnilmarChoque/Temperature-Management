@@ -10,6 +10,14 @@ const PORT = 4000;
 app.use(cors());
 
 const schema = buildSchema(`
+
+    type Sensor {
+        idSensor: ID!
+        equipmentId: String!
+        timestamp: String!
+        value: Float!
+    }
+
     type Funcionario {
         idFuncionario: ID!
         nome: String!
@@ -32,6 +40,7 @@ const schema = buildSchema(`
 
     type RootQuery {
         login(email: String!, senha: String!): AuthData!
+        sensoresPorEmpresa(idEmpresa: ID!): [Sensor!]
     }
 
     type RootMutation {
@@ -72,8 +81,19 @@ const login = async ({ email, senha }) => {
     };
 };
 
+const sensoresPorEmpresa = async ({ idEmpresa }) => {
+    const [rows] = await connection.execute('SELECT * FROM sensor WHERE fkEmpresa = ?', [idEmpresa]);
+    return rows.map(sensor => ({
+        idSensor: sensor.idSensor,
+        equipmentId: sensor.equipmentId,
+        timestamp: sensor.timestamp,
+        value: sensor.value
+    }));
+};
+
 const root = {
-    login
+    login,
+    sensoresPorEmpresa
 };
 
 connectToDatabase().then(() => {

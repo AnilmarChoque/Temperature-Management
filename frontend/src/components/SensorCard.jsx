@@ -1,30 +1,22 @@
 import React from "react";
 import "../pages/home/Home.css";
 
-const SensorCard = ({ identificador, dataSensor, horaSensor , temperaturaSensor}) => {
-
-    const getDate = () => {
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
-    const getHour = () => {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        return `${hours}:${minutes}:${seconds}`
-    }
+const SensorCard = ({ identificador, dataSensor, temperaturaSensor}) => {
     
 	const infoSensor = {
 		id: identificador,
-		data: dataSensor || getDate(),
-        hora: horaSensor || getHour(),
+		data: dataSensor,
         temperatura: temperaturaSensor
 	};
+
+    const timestamp = Number(dataSensor);
+
+    const formattedDate = new Date(timestamp).toLocaleString('pt-BR', {
+		timeZone: 'America/Sao_Paulo',
+	});
+
+    console.log('Timestamp:', dataSensor, 'Formatted Date:', formattedDate);
+
 
 	return (
 		<div className="card-sensor">
@@ -32,14 +24,14 @@ const SensorCard = ({ identificador, dataSensor, horaSensor , temperaturaSensor}
 			<div className="dados-sensor">
 				<p>Data e hora da última captura</p>
 				<div>
-					<p>{infoSensor.data}</p>
-					<p>{infoSensor.hora}</p>
+                    <p>{formattedDate.split(',')[0]}</p>
+                    <p>{formattedDate.split(',')[1]}</p>
 				</div>
 			</div>
 			<div className="dados-sensor">
 				<p>Temperatura Atual</p>
 				<div>
-					<p>{infoSensor.temperatura}</p>
+					<p>{infoSensor.temperatura}°C</p>
 				</div>
 			</div>
 			<button>Ver Mais</button>
