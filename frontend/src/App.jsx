@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Login from './components/login/Login';
-import Home from './components/home/Home';
+import Login from './pages/login/Login';
+import Home from './pages/home/Home';
 import './app.css';
 
 const client = new ApolloClient({
@@ -19,6 +19,14 @@ const Principal = () => {
   } else if (location.pathname === '/home') {
     backgroundClass = 'background-home';
   } 
+
+  useEffect(() => {
+    if (location.pathname === '/') {
+      document.title = 'Login - Gerenciamento de Temperatura';
+    } else if (location.pathname === '/home') {
+      document.title = 'Home - Sensores';
+    }
+  }, [location.pathname]);
 
   return (
     <div className={`${backgroundClass}`}>
