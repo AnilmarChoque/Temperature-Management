@@ -3,11 +3,12 @@ import { useLocation } from 'react-router-dom';
 
 const Home = () => {
 	const location = useLocation();
-	const nome = location.state?.nome || "Visitante";
+	const { data } = location.state;
 
 	return (
-		<div className="home-container">
-			<h1>Bem-vindo, {nome}!</h1>
+		<div>
+			<h1>Bem-vindo {data?.login.nome}!</h1>
+			<p>Você está logado na empresa ID: {data?.login.idEmpresa}</p>
 		</div>
 	);
 };

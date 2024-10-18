@@ -15,11 +15,14 @@ const schema = buildSchema(`
         nome: String!
         email: String!
         senha: String!
+        idEmpresa: ID!
     }
 
     type AuthData {
         idFuncionario: ID!
         nome: String!
+        email: String!
+        idEmpresa: ID!
     }
 
     input FuncionarioInput {
@@ -61,7 +64,12 @@ const login = async ({ email, senha }) => {
     }
 
     const funcionario = rows[0];
-    return { idFuncionario: funcionario.idFuncionario, nome: funcionario.nome };
+    return { 
+        idFuncionario: funcionario.idFuncionario,
+        nome: funcionario.nome,
+        email: funcionario.email,
+        idEmpresa: funcionario.fkEmpresa
+    };
 };
 
 const root = {

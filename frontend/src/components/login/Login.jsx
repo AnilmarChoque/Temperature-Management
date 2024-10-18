@@ -8,6 +8,8 @@ const LOGIN_FUNCIONARIO = gql`
 		login(email: $email, senha: $senha) {
 			idFuncionario
 			nome
+			email
+			idEmpresa
 		}
 	}
 `;
@@ -24,7 +26,7 @@ const Login = () => {
 		const { data } = await loginFuncionario({ variables: { email, senha: password } });
 
 		if (data) {
-			navigate('/home', { state: { nome: data.login.nome } });
+			navigate('/home', { state: { data} });
 		}
 	};
 
