@@ -3,6 +3,7 @@ import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/login/Login';
 import Home from './pages/home/Home';
+import Dashboard from './pages/dashboard/Dashboard';
 import './app.css';
 
 const client = new ApolloClient({
@@ -33,6 +34,7 @@ const Principal = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/sensor/:id" element={<Dashboard />} />
       </Routes>
     </div>
   );

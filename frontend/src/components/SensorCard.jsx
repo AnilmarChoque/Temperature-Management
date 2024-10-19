@@ -1,7 +1,13 @@
 import React from "react";
 import "../pages/home/Home.css";
+import { useNavigate } from "react-router-dom";
 
-const SensorCard = ({ identificador, dataSensor, temperaturaSensor}) => {
+const SensorCard = ({ identificador, dataSensor, temperaturaSensor, idSensor}) => {
+    const navigate = useNavigate();
+
+    const handleViewMore = () => {
+        navigate(`/sensor/${idSensor}`)
+    }
     
 	const infoSensor = {
 		id: identificador,
@@ -31,7 +37,7 @@ const SensorCard = ({ identificador, dataSensor, temperaturaSensor}) => {
 					<p>{infoSensor.temperatura}°C</p>
 				</div>
 			</div>
-			<button>Ver Mais</button>
+			<button onClick={handleViewMore}>Ver Mais</button>
 		</div>
 	);
 };

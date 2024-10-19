@@ -67,6 +67,7 @@ const Home = () => {
 								identificador={sensor.equipmentId}
 								dataSensor={sensor.timestamp}
 								temperaturaSensor={sensor.value}
+								idSensor={sensor.idSensor}
 							/>
 						))
 					)}

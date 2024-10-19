@@ -41,6 +41,7 @@ const schema = buildSchema(`
     type RootQuery {
         login(email: String!, senha: String!): AuthData!
         sensoresPorEmpresa(idEmpresa: ID!): [Sensor!]
+        getSensor(idSensor: ID!): Sensor
     }
 
     type RootMutation {
@@ -91,9 +92,26 @@ const sensoresPorEmpresa = async ({ idEmpresa }) => {
     }));
 };
 
+const getSensor = async ({ idSensor }) => {
+    const [rows] = await connection.execute('SELECT * FROM sensor WHERE idSensor = ?', [idSensor]);
+    if( rows.length === 0) {
+        throw new Error('Sensor não encontrado');
+    }
+
+    const sensor = rows[0];
+    
+    return {
+        idSensor: sensor.idSensor,
+        equipmentId: sensor.equipmentId,
+        timestamp: sensor.timestamp,
+        value: sensor.value
+    };
+};
+
 const root = {
     login,
-    sensoresPorEmpresa
+    sensoresPorEmpresa,
+    getSensor
 };
 
 connectToDatabase().then(() => {
