@@ -5,7 +5,6 @@ import Perfil from "../../components/Perfil";
 import SearchBar from "../../components/SearchBar";
 import SensorCard from "../../components/SensorCard";
 import { gql, useQuery } from "@apollo/client";
-import { handleError } from "@apollo/client/link/http/parseAndCheckHttpResponse";
 
 const GET_SENSORES = gql`
 	query GetSensores($idEmpresa: ID!) {
@@ -24,20 +23,29 @@ const Home = () => {
 
 	const { loading, error, data } = useQuery(GET_SENSORES, {
 		variables: { idEmpresa: authData.login.idEmpresa },
+		pollInterval: 5000,
 	});
 
-	const [filteredSensors, setFilteredSensors] = useState([]);
+	const [filteredSensors, setFilteredSensors] = useState(null);
 
 	const sensores = data?.sensoresPorEmpresa || [];
 
 	const handleSearch = (searchTerm) => {
-		const filtered = sensores.filter(sensor =>
-			sensor.equipmentId.toLowerCase().includes(searchTerm.toLowerCase())
-		);
-		setFilteredSensors(filtered);
+		if (searchTerm) {
+			// Filtrar sensores com base na pesquisa
+			const filtered = sensores.filter(sensor =>
+				sensor.equipmentId.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+			setFilteredSensors(filtered);
+		} else {
+			// Se a busca estiver vazia, redefina a lista de sensores filtrados para null
+			setFilteredSensors(null);
+		}
 	};
 
-	const sensorsToDisplay = filteredSensors.length > 0 ? filteredSensors : sensores;
+	const noResults = filteredSensors !== null && filteredSensors.length === 0;
+	
+	const sensorsToDisplay = filteredSensors != null ? filteredSensors : sensores;
 
 	return (
 		<div className="home">
@@ -48,7 +56,9 @@ const Home = () => {
 			</section>
 			<section className="background-sensor">
 				<div className="menu-sensor">
-					{sensorsToDisplay.length === 0 ? (
+					{noResults ? (
+						<p className="aviso">Nenhum sensor encontrado</p>
+					) : sensorsToDisplay.length === 0 ? (
 						<p className="aviso">Nenhum sensor cadastrado</p>
 					) : (
 						sensorsToDisplay.map((sensor) => (

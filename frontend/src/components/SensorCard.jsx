@@ -15,9 +15,6 @@ const SensorCard = ({ identificador, dataSensor, temperaturaSensor}) => {
 		timeZone: 'America/Sao_Paulo',
 	});
 
-    console.log('Timestamp:', dataSensor, 'Formatted Date:', formattedDate);
-
-
 	return (
 		<div className="card-sensor">
 			<p>{infoSensor.id}</p>
