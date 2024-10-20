@@ -32,13 +32,11 @@ const Home = () => {
 
 	const handleSearch = (searchTerm) => {
 		if (searchTerm) {
-			// Filtrar sensores com base na pesquisa
 			const filtered = sensores.filter(sensor =>
 				sensor.equipmentId.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 			setFilteredSensors(filtered);
 		} else {
-			// Se a busca estiver vazia, redefina a lista de sensores filtrados para null
 			setFilteredSensors(null);
 		}
 	};
@@ -68,6 +66,7 @@ const Home = () => {
 								dataSensor={sensor.timestamp}
 								temperaturaSensor={sensor.value}
 								idSensor={sensor.idSensor}
+								dados={ authData }
 							/>
 						))
 					)}

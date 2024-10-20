@@ -26,7 +26,7 @@ const Login = () => {
 		const { data } = await loginFuncionario({ variables: { email, senha: password } });
 
 		if (data) {
-			navigate('/home', { state: { data} });
+			navigate('/home', { state: { data } });
 		}
 	};
 

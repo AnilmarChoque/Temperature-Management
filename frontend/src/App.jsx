@@ -19,13 +19,17 @@ const Principal = () => {
     backgroundClass = 'background-login';
   } else if (location.pathname === '/home') {
     backgroundClass = 'background-home';
-  } 
+  } else if (location.pathname.startsWith('/sensor/')) {
+    backgroundClass = 'background-dashboard'
+  }
 
   useEffect(() => {
     if (location.pathname === '/') {
       document.title = 'Login - Gerenciamento de Temperatura';
     } else if (location.pathname === '/home') {
       document.title = 'Home - Sensores';
+    } else if (location.pathname.startsWith('/sensor/')) {
+      document.title = 'Sensor'
     }
   }, [location.pathname]);
 

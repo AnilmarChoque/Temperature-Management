@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import "../pages/home/Home.css";
 
-const SearchBar = ({ size, backgroundColor, onSearch }) => {
+const SearchBar = ({ size, backgroundColor, onSearch, lupa }) => {
+
+    const searchBar = {
+        lupa: lupa || "./src/assets/search.png"
+    }
+
 	const backgroundSearch = {
 		width: size,
 		backgroundColor: backgroundColor || "#101F78",
+
 	};
 
 	const backgroundInput = {
@@ -28,7 +34,7 @@ const SearchBar = ({ size, backgroundColor, onSearch }) => {
 				onChange={handleInputChange}
 			/>
 			<button>
-				<img src="./src/assets/search.png" alt="lupa" />
+				<img src={searchBar.lupa} alt="lupa" />
 			</button>
 		</div>
 	);
