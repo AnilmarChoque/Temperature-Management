@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery, useApolloClient } from "@apollo/client";
 import "./Dashboard.css";
 import Perfil from "../../components/Perfil";
 import Back from "../../assets/back.png";
@@ -8,14 +8,13 @@ import fotoPerfil from "../../assets/profile-user.png";
 import SearchBar from "../../components/SearchBar";
 import search from "../../assets/search.png";
 import MiniCard from "../../components/MiniCard";
+import Charts from "../../components/Charts";
 
 const GET_SENSOR = gql`
 	query GetSensor($idSensor: ID!) {
 		getSensor(idSensor: $idSensor) {
 			idSensor
 			equipmentId
-			timestamp
-			value
 		}
 	}
 `;
@@ -25,8 +24,16 @@ const GET_SENSORES = gql`
 		sensoresPorEmpresa(idEmpresa: $idEmpresa) {
 			idSensor
 			equipmentId
-			timestamp
+		}
+	}
+`;
+
+const GET_DADOS = gql`
+	query getDados($idSensor: ID!) {
+		ultimosDados(idSensor: $idSensor) {
+			idDados
 			value
+			timestamp
 		}
 	}
 `;
@@ -35,7 +42,7 @@ const Dashboard = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const location = useLocation();
-
+	const client = useApolloClient();
 	const { usuarioDados } = location.state;
 
 	const { loading, error, data } = useQuery(GET_SENSOR, {
@@ -48,8 +55,36 @@ const Dashboard = () => {
 	});
 
 	const [filteredSensors, setFilteredSensors] = useState(null);
+	const [sensorData, setSensorData] = useState({});
 
 	const sensores = sensoresData?.sensoresPorEmpresa || [];
+
+	useEffect(() => {
+		if (!loading && sensores.length > 0) {
+			const fetchData = async () => {
+				const fetchedData = {};
+				for (const sensor of sensores) {
+					const { data: dadosSensorData } = await client.query({
+						query: GET_DADOS,
+						variables: { idSensor: sensor.idSensor },
+						fetchPolicy: "no-cache",
+					});
+					fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados;
+				}
+				setSensorData(fetchedData);
+			};
+
+			fetchData();
+			const intervalId = setInterval(() => {
+				if (!loading && sensores.length > 0) {
+					console.log("Fetching data...");
+					fetchData();
+				}
+			}, 5000);
+
+			return () => clearInterval(intervalId);
+		}
+	}, [sensores, loading]);
 
 	const handleSearch = (searchTerm) => {
 		if (searchTerm) {
@@ -62,6 +97,10 @@ const Dashboard = () => {
 		}
 	};
 
+	const handleBackPage = () => {
+		navigate(`/home`, { state: { data: usuarioDados } });
+	};
+
 	const noResults = filteredSensors !== null && filteredSensors.length === 0;
 
 	const sensorsToDisplay = filteredSensors != null ? filteredSensors : sensores;
@@ -69,7 +108,7 @@ const Dashboard = () => {
 	if (loading) return <p>Carregando...</p>;
 	if (error) return <p>Erro ao carregar o sensor</p>;
 
-	const { equipmentId, timestamp, value } = data.getSensor;
+	const { equipmentId } = data.getSensor;
 
 	return (
 		<div className="dashboard">
@@ -102,15 +141,19 @@ const Dashboard = () => {
 					) : sensorsToDisplay.length === 0 ? (
 						<p className="aviso">Nenhum sensor cadastrado</p>
 					) : (
-						sensorsToDisplay.map((sensor) => (
-							<MiniCard
-								key={sensor.idSensor}
-								identificador={sensor.equipmentId}
-								temperaturaSensor={sensor.value}
-								idSensor={sensor.idSensor}
-								dados={usuarioDados}
-							/>
-						))
+						sensorsToDisplay.map((sensor) => {
+							const ultimoDado = sensorData[sensor.idSensor];
+
+							return (
+								<MiniCard
+									key={sensor.idSensor}
+									identificador={sensor.equipmentId}
+									temperaturaSensor={ultimoDado?.value || "N/A"}
+									idSensor={sensor.idSensor}
+									dados={usuarioDados}
+								/>
+							);
+						})
 					)}
 				</div>
 			</section>
@@ -118,14 +161,14 @@ const Dashboard = () => {
 				<p className="titulo-dashboard">EQUIPAMENTO: {equipmentId}</p>
 				<div className="grafico-csv">
 					<div className="grafico">
-						<div style={divStyle}>
-							<JSCharting options={config} />
+						<div>
+							<Charts />
 						</div>
 					</div>
 					<div className="arquivo-csv">
 						<p>Problemas com dados incompletos?</p>
 						<p>Envie um arquivo .CSV</p>
-						<label class="file">
+						<label className="file">
 							Clique aqui para enviar
 							<input type="file" accept=".csv" />
 						</label>

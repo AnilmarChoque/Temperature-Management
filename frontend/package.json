@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@apollo/client": "^3.11.8",
+    "apexcharts": "^3.54.1",
     "graphql": "^16.9.0",
     "react": "^18.3.1",
+    "react-apexcharts": "^1.4.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0"
   },

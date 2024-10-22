@@ -126,6 +126,9 @@ p {
 	width: 75%;
 	background-color: #1c31a5;
 	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .arquivo-csv {

@@ -14,8 +14,7 @@ const schema = buildSchema(`
     type Sensor {
         idSensor: ID!
         equipmentId: String!
-        timestamp: String!
-        value: Float!
+        idEmpresa: ID!
     }
 
     type Funcionario {
@@ -24,6 +23,13 @@ const schema = buildSchema(`
         email: String!
         senha: String!
         idEmpresa: ID!
+    }
+
+    type Dados {
+        idDados: ID!
+        timestamp: String!
+        value: Float!
+        idSensor: ID!
     }
 
     type AuthData {
@@ -42,6 +48,7 @@ const schema = buildSchema(`
         login(email: String!, senha: String!): AuthData!
         sensoresPorEmpresa(idEmpresa: ID!): [Sensor!]
         getSensor(idSensor: ID!): Sensor
+        ultimosDados(idSensor: ID!): Dados
     }
 
     type RootMutation {
@@ -87,8 +94,6 @@ const sensoresPorEmpresa = async ({ idEmpresa }) => {
     return rows.map(sensor => ({
         idSensor: sensor.idSensor,
         equipmentId: sensor.equipmentId,
-        timestamp: sensor.timestamp,
-        value: sensor.value
     }));
 };
 
@@ -102,16 +107,30 @@ const getSensor = async ({ idSensor }) => {
     
     return {
         idSensor: sensor.idSensor,
-        equipmentId: sensor.equipmentId,
-        timestamp: sensor.timestamp,
-        value: sensor.value
+        equipmentId: sensor.equipmentId
     };
+};
+
+const ultimosDados = async ({ idSensor }) => {
+    const [rows] = await connection.execute('SELECT * FROM dados WHERE fkSensor = ? ORDER BY timestamp DESC LIMIT 1', [idSensor]);
+    if(rows.length === 0) {
+        throw new Error('Dados não encontrados')
+    }
+
+    const dados = rows[0];
+
+    return {
+        idDados: dados.idDados,
+        timestamp: dados.timestamp,
+        value: dados.value,
+    }
 };
 
 const root = {
     login,
     sensoresPorEmpresa,
-    getSensor
+    getSensor,
+    ultimosDados
 };
 
 connectToDatabase().then(() => {

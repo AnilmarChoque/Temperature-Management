@@ -1,34 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "./Home.css";
 import Perfil from "../../components/Perfil";
 import SearchBar from "../../components/SearchBar";
 import SensorCard from "../../components/SensorCard";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery, useApolloClient } from "@apollo/client";
 
 const GET_SENSORES = gql`
 	query GetSensores($idEmpresa: ID!) {
 		sensoresPorEmpresa(idEmpresa: $idEmpresa) {
 			idSensor
 			equipmentId
-			timestamp
-			value
 		}
 	}
 `;
 
+const GET_DADOS = gql`
+	query getDados($idSensor: ID!) {
+		ultimosDados(idSensor: $idSensor) {
+			idDados
+			timestamp
+			value
+		}
+	}
+`
+
 const Home = () => {
 	const location = useLocation();
+	const client = useApolloClient();
 	const { data: authData } = location.state;
 
-	const { loading, error, data } = useQuery(GET_SENSORES, {
+	const { data, loading, error } = useQuery(GET_SENSORES, {
 		variables: { idEmpresa: authData.login.idEmpresa },
 		pollInterval: 5000,
 	});
 
 	const [filteredSensors, setFilteredSensors] = useState(null);
-
+	const [sensorData, setSensorData] = useState({});
 	const sensores = data?.sensoresPorEmpresa || [];
+
+	useEffect(() => {
+		if (!loading && sensores.length > 0) {
+			const fetchData = async () => {
+				const fetchedData = {};
+				for (const sensor of sensores) {
+					const { data: dadosSensorData } = await client.query({
+						query: GET_DADOS,
+						variables: { idSensor: sensor.idSensor },
+					});
+					fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados;
+				}
+				setSensorData(fetchedData);
+			};
+
+			fetchData();
+		}
+	}, [sensores, loading]);
+
 
 	const handleSearch = (searchTerm) => {
 		if (searchTerm) {
@@ -42,8 +70,10 @@ const Home = () => {
 	};
 
 	const noResults = filteredSensors !== null && filteredSensors.length === 0;
-	
 	const sensorsToDisplay = filteredSensors != null ? filteredSensors : sensores;
+
+	if (loading) return <p>Carregando sensores...</p>;
+	if (error) return <p>Erro ao carregar sensores: {error.message}</p>;
 
 	return (
 		<div className="home">
@@ -59,16 +89,20 @@ const Home = () => {
 					) : sensorsToDisplay.length === 0 ? (
 						<p className="aviso">Nenhum sensor cadastrado</p>
 					) : (
-						sensorsToDisplay.map((sensor) => (
-							<SensorCard
-								key={sensor.idSensor}
-								identificador={sensor.equipmentId}
-								dataSensor={sensor.timestamp}
-								temperaturaSensor={sensor.value}
-								idSensor={sensor.idSensor}
-								dados={ authData }
-							/>
-						))
+						sensorsToDisplay.map((sensor) => {
+							const ultimoDado = sensorData[sensor.idSensor];
+
+							return (
+								<SensorCard
+									key={sensor.idSensor}
+									identificador={sensor.equipmentId}
+									dataSensor={ultimoDado?.timestamp || "N/A"}
+									temperaturaSensor={ultimoDado?.value || "N/A"}
+									idSensor={sensor.idSensor}
+									dados={authData}
+								/>
+							);
+						})
 					)}
 				</div>
 			</section>
