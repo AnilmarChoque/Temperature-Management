@@ -18,10 +18,15 @@ CREATE TABLE funcionario(
 CREATE TABLE sensor (
 	idSensor INT PRIMARY KEY AUTO_INCREMENT,
 	equipmentId VARCHAR(8),
-	timestamp DATE,
-	value DECIMAL(5,2),
 	fkEmpresa INT REFERENCES empresa(idEmpresa)
 );
 
-INSERT INTO empresa (nome, cpnj) VALUES("Petrobrás", "33000167000101");
-INSERT INTO funcionario (nome, email, senha, fkEmpresa) VALUES ("Lucas", "lucas@petrobras.com", "P3TR0BR45", 1);
+CREATE TABLE dados (
+	idDados INT PRIMARY KEY AUTO_INCREMENT,
+	timestamp TIMESTAMP,
+	value DECIMAL(5,2),
+	fkSensor INT REFERENCES sensor(idSensor)
+);
+
+INSERT INTO empresa (nome, cpnj) VALUES('Petrobrás', '33000167000101');
+INSERT INTO funcionario (nome, email, senha, fkEmpresa) VALUES ('Lucas', 'lucas@petrobras.com', 'P3TR0BR45', 1);
