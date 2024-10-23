@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { gql, useQuery, useApolloClient } from "@apollo/client";
+import { gql, useQuery, useApolloClient, useMutation } from "@apollo/client";
 import "./Dashboard.css";
 import Perfil from "../../components/Perfil";
 import Back from "../../assets/back.png";
@@ -48,6 +48,12 @@ const GET_ALL_DADOS = gql`
 	}
 `;
 
+const UPLOAD_CSV = gql`
+	mutation UploadCSV($file: Upload!) {
+		uploadCSV(file: $file)
+	}
+`;
+
 const Dashboard = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
@@ -89,9 +95,9 @@ const Dashboard = () => {
 							variables: { idSensor: sensor.idSensor },
 							fetchPolicy: "no-cache",
 						});
-						fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados || null;
+						fetchedData[sensor.idSensor] =
+							dadosSensorData?.ultimosDados || null;
 					} catch (error) {
-						console.error(`Erro ao buscar dados para o sensor ${sensor.idSensor}:`, error);
 						fetchedData[sensor.idSensor] = null;
 					}
 				}
@@ -101,7 +107,6 @@ const Dashboard = () => {
 			fetchData();
 			const intervalId = setInterval(() => {
 				if (!loading && sensores.length > 0) {
-					console.log("Fetching data...");
 					fetchData();
 				}
 			}, 5000);
@@ -124,6 +129,21 @@ const Dashboard = () => {
 	const handleBackPage = () => {
 		navigate(`/home`, { state: { data: usuarioDados } });
 	};
+
+	const [uploadCSV] = useMutation(UPLOAD_CSV);
+
+	const handleFileUpload = async (event) => {
+		console.log(event.target.files[0]);
+		const arquivo = event.target.files[0];
+		if (arquivo) {
+			try {
+				const { data } = await uploadCSV({ variables: { file: arquivo } });
+				console.log("Arquivo processado com sucesso:", data.uploadCSV);
+			} catch (error) {
+				console.error("Erro ao fazer upload do CSV:", error);
+			}
+		}
+	};	
 
 	const noResults = filteredSensors !== null && filteredSensors.length === 0;
 
@@ -161,8 +181,6 @@ const Dashboard = () => {
 	const media48Horas = calcularMedia(48);
 	const mediaSemana = calcularMedia(24 * 7);
 	const mediaMes = calcularMedia(24 * 30);
-
-	console.log(sensorData)
 
 	return (
 		<div className="dashboard">
@@ -224,7 +242,7 @@ const Dashboard = () => {
 						<p>Envie um arquivo .CSV</p>
 						<label className="file">
 							Clique aqui para enviar
-							<input type="file" accept=".csv" />
+							<input type="file" accept=".csv" onChange={handleFileUpload} />
 						</label>
 					</div>
 				</div>
