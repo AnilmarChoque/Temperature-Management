@@ -47,6 +47,7 @@ const Home = () => {
 					const { data: dadosSensorData } = await client.query({
 						query: GET_DADOS,
 						variables: { idSensor: sensor.idSensor },
+						fetchPolicy: "no-cache",
 					});
 					fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados;
 				}
@@ -54,6 +55,14 @@ const Home = () => {
 			};
 
 			fetchData();
+			const intervalId = setInterval(() => {
+				if (!loading && sensores.length > 0) {
+					console.log("Fetching data...");
+					fetchData();
+				}
+			}, 5000);
+
+			return () => clearInterval(intervalId);
 		}
 	}, [sensores, loading]);
 

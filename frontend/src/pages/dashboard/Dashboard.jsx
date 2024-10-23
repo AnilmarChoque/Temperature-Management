@@ -38,6 +38,16 @@ const GET_DADOS = gql`
 	}
 `;
 
+const GET_ALL_DADOS = gql`
+	query GetAllDados($idSensor: ID!) {
+		getAllDados(idSensor: $idSensor) {
+			idDados
+			value
+			timestamp
+		}
+	}
+`;
+
 const Dashboard = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
@@ -51,6 +61,15 @@ const Dashboard = () => {
 
 	const { data: sensoresData } = useQuery(GET_SENSORES, {
 		variables: { idEmpresa: usuarioDados.login.idEmpresa },
+		pollInterval: 5000,
+	});
+
+	const {
+		data: dataAllsensors,
+		loading: loadingAll,
+		error: errorAll,
+	} = useQuery(GET_ALL_DADOS, {
+		variables: { idSensor: id },
 		pollInterval: 5000,
 	});
 
@@ -110,6 +129,39 @@ const Dashboard = () => {
 
 	const { equipmentId } = data.getSensor;
 
+	const allSensorData = dataAllsensors?.getAllDados || [];
+
+	const calcularMedia = (horas) => {
+		if (!allSensorData || allSensorData.length === 0) {
+			console.log("Nenhum dado disponível para calcular a média.");
+			return "N/A"; // Retorna N/A se não houver dados
+		}
+		const timestamps = allSensorData.map(
+			(dado) => new Date(Number(dado.timestamp))
+		);
+
+		const dataMaisRecente = new Date(Number(Math.max(...timestamps)));
+
+		const limite = new Date(dataMaisRecente.getTime() - horas * 60 * 60 * 1000);
+
+		const dadosFiltrados = allSensorData.filter(
+			(dado) =>
+				new Date(Number(dado.timestamp)) >= limite &&
+				new Date(Number(dado.timestamp)) <= dataMaisRecente
+		);
+
+		if (dadosFiltrados.length === 0) return "N/A";
+
+		const soma = dadosFiltrados.reduce((acc, dado) => acc + dado.value, 0);
+		return (soma / dadosFiltrados.length).toFixed(2);
+	};
+
+	// Calcular médias para os períodos específicos
+	const media24Horas = calcularMedia(24);
+	const media48Horas = calcularMedia(48);
+	const mediaSemana = calcularMedia(24 * 7);
+	const mediaMes = calcularMedia(24 * 30);
+
 	return (
 		<div className="dashboard">
 			<section className="menu-lateral">
@@ -162,7 +214,7 @@ const Dashboard = () => {
 				<div className="grafico-csv">
 					<div className="grafico">
 						<div>
-							<Charts />
+							<Charts dadosSensor={allSensorData} />
 						</div>
 					</div>
 					<div className="arquivo-csv">
@@ -197,19 +249,19 @@ const Dashboard = () => {
 				<div className="medias">
 					<div className="dia">
 						<p className="titulo-media">Últimas 24 horas</p>
-						<p className="temperatura-dia">53.72°C</p>
+						<p className="temperatura-dia">{media24Horas}°C</p>
 					</div>
 					<div className="dias">
 						<p className="titulo-media">Últimas 48 horas</p>
-						<p className="temperatura-dias">78.24°C</p>
+						<p className="temperatura-dias">{media48Horas}°C</p>
 					</div>
 					<div className="semana">
 						<p className="titulo-media">Última Semana</p>
-						<p className="temperatura-semana">103.57°C</p>
+						<p className="temperatura-semana">{mediaSemana}°C</p>
 					</div>
 					<div className="mes">
 						<p className="titulo-media">Último Mês</p>
-						<p className="temperatura-mes">84.43°C</p>
+						<p className="temperatura-mes">{mediaMes}°C</p>
 					</div>
 				</div>
 			</section>

@@ -1,20 +1,29 @@
 import React from "react";
 import ApexCharts from "react-apexcharts";
 
-const Charts = () => {
+const Charts = ({ dadosSensor }) => {
+    const ultimosDados = dadosSensor.slice(-8);
+
+	let cont = ultimosDados.length;
+	const seriesData = ultimosDados.map((dados) => {
+		const timestamp = Number(dados.timestamp);
+
+		return {
+			x: new Date(timestamp).getTime(),
+			y: dados.value,
+		};
+	});
+
 	const options = {
 		chart: {
 			type: "line",
 			zoom: {
-				enabled: false,
+				enabled: true, 
 			},
 			background: "transparent",
 		},
 		theme: {
 			mode: "dark",
-		},
-		dataLabels: {
-			enabled: false,
 		},
 		stroke: {
 			curve: "straight",
@@ -24,25 +33,39 @@ const Charts = () => {
 			text: "LEITURAS DO SENSOR",
 			align: "center",
 		},
+		yaxis: {
+			min: 0,
+		},
+		markers: {
+			size: 5,
+			colors: "#000524",
+			strokeColors: "#000524",
+			strokeWidth: 3,
+		},
 		xaxis: {
-			categories: [
-				"12:00",
-				"13:00",
-				"14:00",
-                "15:00",
-                "16:00",
-                "17:00",
-                "18:00",
-                "19:00",
-                "20:00"
-			],
+			type: "datetime",
+			tickAmount: cont - 2,
+			labels: {
+				datetimeUTC: true,
+				formatter: function (value) {
+					const date = new Date(value);
+					const options = { 
+                        month: "2-digit", 
+                        day: "2-digit", 
+                        hour: "2-digit", 
+                        minute: "2-digit", 
+                        hour12: false 
+                    };
+					return date.toLocaleTimeString([], options);
+				},
+			},
 		},
 	};
 
 	const series = [
 		{
 			name: "Temperatura",
-			data: [10, 41, 35, 51, 49, 62, 69, 91, 148],
+			data: seriesData,
 		},
 	];
 
