@@ -83,12 +83,17 @@ const Dashboard = () => {
 			const fetchData = async () => {
 				const fetchedData = {};
 				for (const sensor of sensores) {
-					const { data: dadosSensorData } = await client.query({
-						query: GET_DADOS,
-						variables: { idSensor: sensor.idSensor },
-						fetchPolicy: "no-cache",
-					});
-					fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados;
+					try {
+						const { data: dadosSensorData } = await client.query({
+							query: GET_DADOS,
+							variables: { idSensor: sensor.idSensor },
+							fetchPolicy: "no-cache",
+						});
+						fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados || null;
+					} catch (error) {
+						console.error(`Erro ao buscar dados para o sensor ${sensor.idSensor}:`, error);
+						fetchedData[sensor.idSensor] = null;
+					}
 				}
 				setSensorData(fetchedData);
 			};
@@ -132,10 +137,6 @@ const Dashboard = () => {
 	const allSensorData = dataAllsensors?.getAllDados || [];
 
 	const calcularMedia = (horas) => {
-		if (!allSensorData || allSensorData.length === 0) {
-			console.log("Nenhum dado disponível para calcular a média.");
-			return "N/A"; // Retorna N/A se não houver dados
-		}
 		const timestamps = allSensorData.map(
 			(dado) => new Date(Number(dado.timestamp))
 		);
@@ -156,11 +157,12 @@ const Dashboard = () => {
 		return (soma / dadosFiltrados.length).toFixed(2);
 	};
 
-	// Calcular médias para os períodos específicos
 	const media24Horas = calcularMedia(24);
 	const media48Horas = calcularMedia(48);
 	const mediaSemana = calcularMedia(24 * 7);
 	const mediaMes = calcularMedia(24 * 30);
+
+	console.log(sensorData)
 
 	return (
 		<div className="dashboard">

@@ -44,12 +44,16 @@ const Home = () => {
 			const fetchData = async () => {
 				const fetchedData = {};
 				for (const sensor of sensores) {
-					const { data: dadosSensorData } = await client.query({
-						query: GET_DADOS,
-						variables: { idSensor: sensor.idSensor },
-						fetchPolicy: "no-cache",
-					});
-					fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados;
+					try {
+						const { data: dadosSensorData } = await client.query({
+							query: GET_DADOS,
+							variables: { idSensor: sensor.idSensor },
+							fetchPolicy: "no-cache",
+						});
+						fetchedData[sensor.idSensor] = dadosSensorData?.ultimosDados || null;
+					} catch (error) {
+						fetchedData[sensor.idSensor] = null;
+					}
 				}
 				setSensorData(fetchedData);
 			};
