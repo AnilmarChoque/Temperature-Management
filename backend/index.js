@@ -39,9 +39,10 @@ const schema = buildSchema(`
         idEmpresa: ID!
     }
 
-    input FuncionarioInput {
-        email: String!
-        senha: String!
+    input DadosInput {
+        timestamp: String!
+        value: Float!
+        idSensor: ID!
     }
 
     type RootQuery {
@@ -49,10 +50,11 @@ const schema = buildSchema(`
         sensoresPorEmpresa(idEmpresa: ID!): [Sensor!]
         getSensor(idSensor: ID!): Sensor
         ultimosDados(idSensor: ID!): Dados
+        getAllDados(idSensor: ID!): [Dados!]
     }
 
     type RootMutation {
-        createFuncionario(funcionarioInput: FuncionarioInput): Funcionario
+        addDados(dadosInput: DadosInput): Dados
     }
 
     schema {
@@ -87,6 +89,22 @@ const login = async ({ email, senha }) => {
         email: funcionario.email,
         idEmpresa: funcionario.fkEmpresa
     };
+};
+
+const addDados = async ({ dadosInput }) => {
+    const { timestamp, value, idSensor } = dadosInput;
+
+    const [result] = await connection.execute(
+        'INSERT INTO dados (timestamp, value, fkSensor) VALUES (?, ?, ?)',
+        [timestamp, value, idSensor]
+    );
+
+    return {
+        idDados: result.insertId,
+        timestamp,
+        value,
+        idSensor
+    }
 };
 
 const sensoresPorEmpresa = async ({ idEmpresa }) => {
@@ -126,11 +144,23 @@ const ultimosDados = async ({ idSensor }) => {
     }
 };
 
+const getAllDados = async ({ idSensor }) => {
+    const [rows] = await connection.execute('SELECT * FROM dados WHERE fkSensor = ? ORDER BY timestamp', [idSensor]);
+
+    return rows.map(dados => ({
+        idDados: dados.idDados,
+        timestamp: dados.timestamp,
+        value: dados.value
+    }));
+};
+
 const root = {
     login,
     sensoresPorEmpresa,
     getSensor,
-    ultimosDados
+    ultimosDados,
+    getAllDados,
+    addDados
 };
 
 connectToDatabase().then(() => {
