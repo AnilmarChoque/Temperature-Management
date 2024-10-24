@@ -30,3 +30,10 @@ CREATE TABLE dados (
 
 INSERT INTO empresa (nome, cpnj) VALUES('Petrobrás', '33000167000101');
 INSERT INTO funcionario (nome, email, senha, fkEmpresa) VALUES ('Lucas', 'lucas@petrobras.com', 'P3TR0BR45', 1);
+
+INSERT INTO sensor (equipmentId, fkEmpresa) VALUES
+('EQ-12495', 1);
+INSERT INTO sensor (equipmentId, fkEmpresa) VALUES
+('EQ-12496', 1);
+
+select * from dados;
