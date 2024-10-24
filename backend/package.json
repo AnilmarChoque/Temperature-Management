@@ -11,10 +11,7 @@
   "description": "",
   "dependencies": {
     "apollo-server-express": "^3.13.0",
-    "csv-parser": "^3.0.0",
     "express": "^4.21.1",
-    "graphql-upload": "^11.0.0",
-    "mysql2": "^3.11.3",
-    "punycode": "^2.3.1"
+    "mysql2": "^3.11.3"
   }
 }

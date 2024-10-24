@@ -1,17 +1,11 @@
 const express = require('express');
 const { ApolloServer, gql } = require('apollo-server-express');
 const mysql = require('mysql2/promise');
-const { graphqlUploadExpress } = require('graphql-upload');
-const fs = require('fs');
-const csv = require('csv-parser');
 
 const app = express();
 const PORT = 4000;
-app.use(graphqlUploadExpress());
 
 const typeDefs = gql`
-    scalar Upload
-
     type Sensor {
         idSensor: ID!
         equipmentId: String!
@@ -57,7 +51,8 @@ const typeDefs = gql`
 
     type Mutation {
         addDados(dadosInput: DadosInput): Dados
-        uploadCSV(file: Upload!): String
+        salvarDadosCsv(dadosInput: [DadosInput!]!): [Dados!]!
+
     }
 `;
 
@@ -72,54 +67,6 @@ let connection;
 
 const connectToDatabase = async () => {
     connection = await mysql.createConnection(dbConfig);
-};
-
-const salvarDados = async (dados) => {
-    const { idDados, timestamp, value, idSensor } = dados;
-    await connection.execute(
-        'INSERT INTO dados (idDados, timestamp, value, fkSensor) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE timestamp = VALUES(timestamp), value = VALUES(value), fkSensor = VALUES(fkSensor)',
-        [idDados, timestamp, value, idSensor]
-    );
-};
-
-const uploadCSV = async ({ file }) => {
-    console.log(file);
-    const reader = fs.createReadStream(file)
-    console.log(reader);
-    const { createReadStream, filename } = await file;
-
-    console.log('Recebendo arquivo:', filename);
-    const stream = createReadStream();
-
-    return new Promise((resolve, reject) => {
-        const results = [];
-
-        stream
-            .pipe(csv())
-            .on('data', (row) => {
-                results.push(row);
-            })
-            .on('end', async () => {
-                try {
-                    for (const row of results) {
-                        const { idDados, timestamp, value, idSensor } = row;
-                        // Garantir que o value é um número e o idSensor é um inteiro
-                        await salvarDados({
-                            idDados: parseInt(idDados), // Certificando que idDados é um inteiro
-                            timestamp,
-                            value: parseFloat(value),
-                            idSensor: parseInt(idSensor)
-                        });
-                    }
-                    resolve(`Arquivo ${filename} processado com sucesso!`);
-                } catch (error) {
-                    reject(`Erro ao processar o arquivo: ${error.message}`);
-                }
-            })
-            .on('error', (error) => {
-                reject(`Erro ao ler o arquivo CSV: ${error.message}`);
-            });
-    });
 };
 
 const resolvers = {
@@ -179,9 +126,24 @@ const resolvers = {
                 idSensor
             };
         },
-        uploadCSV: async (_, { file }) => {
-            console.log(file)
-            return await uploadCSV(file);
+        salvarDadosCsv: async (_, { dadosInput }) => {
+            const insertedData = [];
+
+            for (const dado of dadosInput) {
+                const { idDados, timestamp, value, idSensor } = dado;
+                const [result] = await connection.execute(
+                    'INSERT INTO dados (idDados, timestamp, value, fkSensor) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE timestamp = VALUES(timestamp), value = VALUES(value), fkSensor = VALUES(fkSensor)',
+                    [idDados, timestamp, value, idSensor]
+                );
+                insertedData.push({
+                    idDados: idDados || result.insertId,
+                    timestamp,
+                    value,
+                    idSensor
+                });
+            }
+
+            return insertedData;
         }
     }
 };

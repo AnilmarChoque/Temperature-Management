@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Papa from "papaparse";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { gql, useQuery, useApolloClient, useMutation } from "@apollo/client";
 import "./Dashboard.css";
@@ -48,10 +49,15 @@ const GET_ALL_DADOS = gql`
 	}
 `;
 
-const UPLOAD_CSV = gql`
-	mutation UploadCSV($file: Upload!) {
-		uploadCSV(file: $file)
-	}
+const SALVAR_DADOS_CSV = gql`
+    mutation SalvarDadosCsv($dadosInput: [DadosInput!]!) {
+        salvarDadosCsv(dadosInput: $dadosInput) {
+            idDados
+            timestamp
+            value
+            idSensor
+        }
+    }
 `;
 
 const Dashboard = () => {
@@ -81,6 +87,8 @@ const Dashboard = () => {
 
 	const [filteredSensors, setFilteredSensors] = useState(null);
 	const [sensorData, setSensorData] = useState({});
+	const [salvarDadosCsv] = useMutation(SALVAR_DADOS_CSV);
+
 
 	const sensores = sensoresData?.sensoresPorEmpresa || [];
 
@@ -130,21 +138,6 @@ const Dashboard = () => {
 		navigate(`/home`, { state: { data: usuarioDados } });
 	};
 
-	const [uploadCSV] = useMutation(UPLOAD_CSV);
-
-	const handleFileUpload = async (event) => {
-		console.log(event.target.files[0]);
-		const arquivo = event.target.files[0];
-		if (arquivo) {
-			try {
-				const { data } = await uploadCSV({ variables: { file: arquivo } });
-				console.log("Arquivo processado com sucesso:", data.uploadCSV);
-			} catch (error) {
-				console.error("Erro ao fazer upload do CSV:", error);
-			}
-		}
-	};	
-
 	const noResults = filteredSensors !== null && filteredSensors.length === 0;
 
 	const sensorsToDisplay = filteredSensors != null ? filteredSensors : sensores;
@@ -181,6 +174,49 @@ const Dashboard = () => {
 	const media48Horas = calcularMedia(48);
 	const mediaSemana = calcularMedia(24 * 7);
 	const mediaMes = calcularMedia(24 * 30);
+
+    const handleFileChange = (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+	
+		Papa.parse(file, {
+			header: true,
+			complete: async function (results) {
+				
+				const csvData = results.data
+					.map((row) => ({
+						idDados: row.idDados,
+						timestamp: row.timestamp,
+						value: parseFloat(row.value),
+						idSensor: row.fkSensor,
+					}))
+					.filter(row => 
+						row.idDados && 
+						row.timestamp && 
+						!isNaN(row.value) && 
+						row.idSensor 
+					);
+
+				console.log("Dados a serem enviados:", csvData);
+	
+				if (csvData.length === 0) {
+					alert("Nenhum dado válido encontrado no CSV.");
+					return;
+				}
+	
+				try {
+					await salvarDadosCsv({
+						variables: { dadosInput: csvData },
+					});
+					alert("Dados enviados com sucesso!");
+				} catch (error) {
+					console.error("Erro ao enviar dados:", error);
+					alert("Falha ao enviar dados");
+				}
+			},
+		});
+		e.target.value = "";
+	};
 
 	return (
 		<div className="dashboard">
@@ -242,7 +278,7 @@ const Dashboard = () => {
 						<p>Envie um arquivo .CSV</p>
 						<label className="file">
 							Clique aqui para enviar
-							<input type="file" accept=".csv" onChange={handleFileUpload} />
+							<input type="file" accept=".csv" onChange={handleFileChange} />
 						</label>
 					</div>
 				</div>
