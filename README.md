@@ -18,29 +18,45 @@ Os equipamentos são capazes de enviar dados no formato JSON para um endpoint. U
 - `timestamp`: a data e hora em que o evento ocorreu, incluindo o fuso horário;
 - `value`: o valor do sensor com precisão de duas casas decimais.
 
-## Tarefas
+## Detalhamento das pastas
+### Dados
+Pasta onde é armazenada a modelagem e script do banco de dados utilizado. O banco de dados utilizado foi o MySQL.
 
-### Modelagem de Banco de Dados
-Modele um banco de dados da sua escolha para o caso de uso apresentado.
+### Backend
+Pasta onde está localizada a API do projeto, foi utilizado o graphQL para realização dessa API.
 
-### Criação de API
-Crie uma API com um endpoint que receba as requisições em tempo real e armazene os dados no banco de dados.
+### Frontend
+Pasta onde está localizada as telas da aplicação, nela temos a pasta `src` que contem nossas imagens utilizadas (`assets`), nosso componentes e nossas páginas.
 
-### Lidar com Falhas Técnicas
-Alguns dos sensores da planta podem apresentar falhas técnicas, resultando em lacunas nos dados. Para lidar com isso, o fornecedor pode enviar arquivos CSV com os dados perdidos.  
-Adicione na API um endpoint que receba um arquivo CSV, faça o parser dos dados e salve os valores no banco de dados. O formato do CSV pode ser encontrado na tabela abaixo:
+## Funções
+- Realizar login (Apenas)
+- Visualizar uma grade de equipamentos
+-	Mostrar nessa grade às últimas capturas
+-	Pesquisar o equipamento
+-	Exibir um gráfico linha dos dados coletados do sensor
+-	Exibir a média das últimas 24 horas
+-	Exibir a média das últimas 48 horas
+-	Exibir a média da última semana
+-	Exibir a média do último mês
+-	Enviar um arquivo CSV para adição, atualização ou preenchimento de dados perdidos
 
+## Como Executar o Projeto
 
-| equipmentId | timestamp                      | value |
-|-------------|---------------------------------|-------|
-| EQ-12495    | 2023-02-12T01:30:00.000-05:00   | 78.8  |
-| EQ-12492    | 2023-01-12T01:30:00.000-05:00   | 8.8   |
+1. Criamos o banco de dados e as tabelas utilizando o script dentro da pasta `dados`
 
+2. Abrimos um terminal dentro da pasta backend e executamos os seguintes comandos
+```shell
+npm i
+node index.js
+```
 
-### Visualização de Dados
-Crie uma tela que exiba o valor médio de cada sensor nas últimas 24 horas, 48 horas, 1 semana ou 1 mês.
-Sua tela deve conter gráficos para facilitar a análise.
+3. Abrimos outro terminal dentro da pasta frontend (sem encerrar o outro) e executamos o seguinte
 
-### Documentação
-Crie uma documentação detalhada da sua solução.
+```shell
+npm run dev
+```
 
+4. Agora abra um navegador e acesse o link http://localhost:5173 para acessar a aplicação
+
+### Prótotipo
+[Prótotipo de telas](https://www.figma.com/design/PccEWKUnSifhFS8HNAUwQb/Temperature-Management-(Radix)?node-id=0-1&t=gWbBlutERFufhKZP-1)
