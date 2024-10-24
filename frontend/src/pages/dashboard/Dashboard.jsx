@@ -50,14 +50,14 @@ const GET_ALL_DADOS = gql`
 `;
 
 const SALVAR_DADOS_CSV = gql`
-    mutation SalvarDadosCsv($dadosInput: [DadosInput!]!) {
-        salvarDadosCsv(dadosInput: $dadosInput) {
-            idDados
-            timestamp
-            value
-            idSensor
-        }
-    }
+	mutation SalvarDadosCsv($dadosInput: [DadosInput!]!) {
+		salvarDadosCsv(dadosInput: $dadosInput) {
+			idDados
+			timestamp
+			value
+			idSensor
+		}
+	}
 `;
 
 const Dashboard = () => {
@@ -88,7 +88,6 @@ const Dashboard = () => {
 	const [filteredSensors, setFilteredSensors] = useState(null);
 	const [sensorData, setSensorData] = useState({});
 	const [salvarDadosCsv] = useMutation(SALVAR_DADOS_CSV);
-
 
 	const sensores = sensoresData?.sensoresPorEmpresa || [];
 
@@ -175,14 +174,13 @@ const Dashboard = () => {
 	const mediaSemana = calcularMedia(24 * 7);
 	const mediaMes = calcularMedia(24 * 30);
 
-    const handleFileChange = (e) => {
+	const handleFileChange = (e) => {
 		const file = e.target.files[0];
 		if (!file) return;
-	
+
 		Papa.parse(file, {
 			header: true,
 			complete: async function (results) {
-				
 				const csvData = results.data
 					.map((row) => ({
 						idDados: row.idDados,
@@ -190,20 +188,18 @@ const Dashboard = () => {
 						value: parseFloat(row.value),
 						idSensor: row.fkSensor,
 					}))
-					.filter(row => 
-						row.idDados && 
-						row.timestamp && 
-						!isNaN(row.value) && 
-						row.idSensor 
+					.filter(
+						(row) =>
+							row.idDados && row.timestamp && !isNaN(row.value) && row.idSensor
 					);
 
 				console.log("Dados a serem enviados:", csvData);
-	
+
 				if (csvData.length === 0) {
 					alert("Nenhum dado válido encontrado no CSV.");
 					return;
 				}
-	
+
 				try {
 					await salvarDadosCsv({
 						variables: { dadosInput: csvData },
@@ -216,6 +212,16 @@ const Dashboard = () => {
 			},
 		});
 		e.target.value = "";
+	};
+
+	const determinarCor = (media) => {
+		if (media >= 90 && media <= 100) {
+			return "#00FF00";
+		} else if (media >= 80 && media <= 110) {
+			return "#FFFF00";
+		} else {
+			return "#FF0000";
+		}
 	};
 
 	return (
@@ -305,19 +311,39 @@ const Dashboard = () => {
 				<div className="medias">
 					<div className="dia">
 						<p className="titulo-media">Últimas 24 horas</p>
-						<p className="temperatura-dia">{media24Horas}°C</p>
+						<p
+							className="temperatura-dia"
+							style={{ color: determinarCor(media24Horas) }}
+						>
+							{media24Horas}°C
+						</p>
 					</div>
 					<div className="dias">
 						<p className="titulo-media">Últimas 48 horas</p>
-						<p className="temperatura-dias">{media48Horas}°C</p>
+						<p
+							className="temperatura-dias"
+							style={{ color: determinarCor(media48Horas) }}
+						>
+							{media48Horas}°C
+						</p>
 					</div>
 					<div className="semana">
 						<p className="titulo-media">Última Semana</p>
-						<p className="temperatura-semana">{mediaSemana}°C</p>
+						<p
+							className="temperatura-semana"
+							style={{ color: determinarCor(mediaSemana) }}
+						>
+							{mediaSemana}°C
+						</p>
 					</div>
 					<div className="mes">
 						<p className="titulo-media">Último Mês</p>
-						<p className="temperatura-mes">{mediaMes}°C</p>
+						<p
+							className="temperatura-mes"
+							style={{ color: determinarCor(mediaMes) }}
+						>
+							{mediaMes}°C
+						</p>
 					</div>
 				</div>
 			</section>
